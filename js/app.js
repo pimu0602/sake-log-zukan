@@ -145,7 +145,26 @@
       <div class="dialog-icon">⌫</div><h2 id="dialog-title">この記録を削除しますか？</h2><p>「${Render.esc(record.name)}」を図鑑から削除します。この操作は元に戻せません。</p>
       <div><button class="button secondary" type="button" data-action="close-dialog">キャンセル</button><button class="button delete-button" type="button" data-action="confirm-delete" data-id="${Render.esc(id)}">削除する</button></div>
     </div></div>`;
-    dialogRoot.querySelector('[data-action="confirm-delete"]').focus();
+    const backdrop = dialogRoot.querySelector('.dialog-backdrop');
+    const cancelButton = dialogRoot.querySelector('[data-action="close-dialog"]');
+    const confirmButton = dialogRoot.querySelector('[data-action="confirm-delete"]');
+    const closeDialog = () => { dialogRoot.innerHTML = ''; };
+
+    cancelButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeDialog();
+    });
+    confirmButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      Storage.remove(id);
+      closeDialog();
+      showToast('記録を削除しました');
+      navigate('genres');
+    });
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop) closeDialog();
+    });
+    confirmButton.focus();
   }
 
   function updateFormGenre(select) {
@@ -181,15 +200,6 @@
     if (action === 'collection-sub') setRouteParams({ subgenre: target.dataset.sub });
     if (action === 'tag-search') navigate('search', { tag: target.dataset.tag });
     if (action === 'clear-search') navigate('search');
-    if (action === 'close-dialog' && (target.matches('button') || event.target === target)) {
-      dialogRoot.innerHTML = '';
-    }
-    if (action === 'confirm-delete') {
-      Storage.remove(target.dataset.id);
-      dialogRoot.innerHTML = '';
-      showToast('記録を削除しました');
-      navigate('genres');
-    }
   });
 
   document.addEventListener('keydown', (event) => {
