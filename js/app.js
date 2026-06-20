@@ -145,7 +145,6 @@
       <div class="dialog-icon">⌫</div><h2 id="dialog-title">この記録を削除しますか？</h2><p>「${Render.esc(record.name)}」を図鑑から削除します。この操作は元に戻せません。</p>
       <div><button class="button secondary" type="button" data-action="close-dialog">キャンセル</button><button class="button delete-button" type="button" data-action="confirm-delete" data-id="${Render.esc(id)}">削除する</button></div>
     </div></div>`;
-    dialogRoot.querySelector('.dialog').addEventListener('click', (event) => event.stopPropagation());
     dialogRoot.querySelector('[data-action="confirm-delete"]').focus();
   }
 
@@ -182,12 +181,20 @@
     if (action === 'collection-sub') setRouteParams({ subgenre: target.dataset.sub });
     if (action === 'tag-search') navigate('search', { tag: target.dataset.tag });
     if (action === 'clear-search') navigate('search');
-    if (action === 'close-dialog') dialogRoot.innerHTML = '';
+    if (action === 'close-dialog' && (target.matches('button') || event.target === target)) {
+      dialogRoot.innerHTML = '';
+    }
     if (action === 'confirm-delete') {
       Storage.remove(target.dataset.id);
       dialogRoot.innerHTML = '';
       showToast('記録を削除しました');
       navigate('genres');
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && dialogRoot.firstElementChild) {
+      dialogRoot.innerHTML = '';
     }
   });
 
